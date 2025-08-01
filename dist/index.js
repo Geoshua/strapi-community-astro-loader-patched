@@ -4248,18 +4248,29 @@ function strapiLoader({
         let page = 1;
         let hasMore = true;
         while (hasMore) {
-          const data = await fetchFromStrapi(contentType, params);
+          const pagedParams = {
+            ...params,
+            pagination: {
+              page,
+              pageSize
+            }
+          };
+        
+          const data = await fetchFromStrapi(contentType, pagedParams);
+        
           if (data?.data && Array.isArray(data.data)) {
             content.push(...data.data);
-            console.log(`Fetched ${data.data.length} items from Strapi`);
+            console.log(`Fetched ${data.data.length} items from Strapi (page ${page})`);
           } else {
             console.warn("No valid data received from Strapi");
           }
+        
           const { currentPage, totalPages } = getPaginationInfo(data);
           hasMore = Boolean(
             currentPage && totalPages && currentPage < totalPages
           );
           page++;
+          
           if (!content.length) {
             throw new Error("No content items received from Strapi");
           }
